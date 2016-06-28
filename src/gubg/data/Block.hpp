@@ -107,10 +107,10 @@ namespace gubg { namespace data {
                             return;
                         constexpr auto field_ix = FieldIX::value;
                         if (field_ix == std::tuple_size<Fields>::value-1)
-                            line.popAll(tmp_value_);
+                            line.pop_all(tmp_value_);
                         else
                         {
-                            if (!line.popUntil(tmp_value_, delimiter))
+                            if (!line.pop_until(tmp_value_, delimiter))
                             {
                                 ok = false;
                                 msg = std::string("No value found for field_ix ")+std::to_string(field_ix)+" for record_ix "+std::to_string(record_ix);
@@ -353,7 +353,7 @@ namespace gubg { namespace data {
                     {
                         Strange strange(content);
                         size_t nr_lines = 0;
-                        while (strange.popLine(line)) { ++nr_lines; }
+                        while (strange.pop_line(line)) { ++nr_lines; }
                         resize(nr_lines);
                     }
                     Strange strange(content);
@@ -361,7 +361,7 @@ namespace gubg { namespace data {
                     const auto s = size();
                     for (size_t ix = 0; ix < s; ++ix)
                     {
-                        const bool ok = strange.popLine(line);
+                        const bool ok = strange.pop_line(line);
                         assert(ok);//Should not fail, we have done the resize() ourselves
                         details::LoadFromStrange<Fields, Delimiter> loadFromStrange(fields_, ix, line, delimiter);
                         tuple::for_each(field_ixs_, loadFromStrange);
@@ -371,7 +371,7 @@ namespace gubg { namespace data {
                             MSS(loadFromStrange.ok);
                         }
                     }
-                    assert(!strange.popLine(line));
+                    assert(!strange.pop_line(line));
                     MSS_END();
                 }
 
