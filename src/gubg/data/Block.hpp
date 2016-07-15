@@ -122,7 +122,7 @@ namespace gubg { namespace data {
                     }
                 bool parse_and_set_(int &v)
                 {
-                    if (!tmp_value_.popDecimal(v))
+                    if (!tmp_value_.pop_decimal(v))
                     {
                         msg = std::string("This is not an int: ")+tmp_value_.str();
                         return false;
@@ -131,7 +131,7 @@ namespace gubg { namespace data {
                 }
                 bool parse_and_set_(double &v)
                 {
-                    if (!tmp_value_.popFloat(v))
+                    if (!tmp_value_.pop_float(v))
                     {
                         msg = std::string("This is not a float: ")+tmp_value_.str();
                         return false;
