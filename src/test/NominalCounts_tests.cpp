@@ -3,7 +3,6 @@
 #include "gubg/data/Nominal.hpp"
 #include "gubg/hr.hpp"
 #include "gubg/debug.hpp"
-using namespace gubg::log;
 
 namespace  { 
     typedef gubg::data::NominalCounts<3, float> NC;
