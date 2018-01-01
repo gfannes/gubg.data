@@ -13,7 +13,7 @@ TEST_CASE("ctor", "[ut][tabledistr]")
 {
     S("test");
     NC nc;
-    L(hr(nc.counts()));
+    L(gubg::hr(nc.counts()));
 }
 TEST_CASE("collecting nominal values", "[ut][tabledistr]")
 {
@@ -25,7 +25,7 @@ TEST_CASE("collecting nominal values", "[ut][tabledistr]")
     nc += NV(1);
     nc += NV(2);
     nc += NV(2);
-    L(hr(nc.counts()));
+    L(gubg::hr(nc.counts()));
 }
 TEST_CASE("Summing", "[ut][tabledistr]")
 {
@@ -49,6 +49,6 @@ TEST_CASE("Summing", "[ut][tabledistr]")
         nc2 += NV(2);
     }
     nc1 += nc2;
-    L(hr(nc1.counts()));
+    L(gubg::hr(nc1.counts()));
     REQUIRE(12 == nc1.sum());
 }
