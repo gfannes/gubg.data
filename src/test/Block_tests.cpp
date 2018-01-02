@@ -6,7 +6,7 @@ using namespace gubg::data;
 using gubg::file::File;
 
 namespace  { 
-    const File data_fn("src/test/data.txt");
+    const File data_fn("gubg.data/src/test/data.txt");
 } 
 
 TEST_CASE("Block", "[ut][data]")
