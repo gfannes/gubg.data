@@ -29,7 +29,7 @@ namespace gubg { namespace data {
 
             std::string content;
             MSS(file::read(content, filename));
-            Strange strange(content);
+            Strange strange(std::move(content));
 
             Strange line;
             bool names_are_set = false;
@@ -52,19 +52,19 @@ namespace gubg { namespace data {
                     Strange dup = line;
                     std::string dummy;
                     std::ostringstream oss;
-                    for (unsigned int ix = 0; dup.pop_until(dummy, delimiter_) || dup.pop_all(dummy); ++ix)
+                    for (unsigned int cix = 0; dup.pop_until(dummy, delimiter_) || dup.pop_all(dummy); ++cix)
                     {
                         oss.str("");
-                        oss << "field_" << ix;
+                        oss << "field_" << cix;
                         MSS(table.add_field(oss.str()));
                     }
                     names_are_set = true;
                 }
 
-                auto row = table.stage_row();
-                for (unsigned int ix = 0; line.pop_until(value, delimiter_) || line.pop_all(value); ++ix)
+                auto &row = table.add_row();
+                for (unsigned int cix = 0; line.pop_until(value, delimiter_) || line.pop_all(value); ++cix)
                 {
-                    MSS(row.set(ix, value));
+                    MSS(Traits<Value>::convert(row[cix], value));
                 }
             }
             MSS_END();

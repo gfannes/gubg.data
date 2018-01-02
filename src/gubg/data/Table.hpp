@@ -1,9 +1,9 @@
 #ifndef HEADER_gubg_data_Table_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_data_Table_hpp_ALREADY_INCLUDED
 
+#include "gubg/data/Traits.hpp"
 #include "gubg/mss.hpp"
 #include "gubg/Range.hpp"
-#include "gubg/Strange.hpp"
 #include <vector>
 #include <string>
 #include <algorithm>
@@ -12,32 +12,12 @@
 
 namespace gubg { namespace data { 
 
-    template <typename Value> struct Traits
-    {
-        static void convert(Value &dst, const gubg::Strange &strange)
-        {
-            dst = strange;
-        }
-    }; 
-    template <> struct Traits<float>
-    {
-        static void convert(float &dst, gubg::Strange strange)
-        {
-            strange.pop_float(dst);
-        }
-    };
-    template <> struct Traits<std::string>
-    {
-        static void convert(std::string &dst, const gubg::Strange &strange)
-        {
-            dst = strange.str();
-        }
-    };
-
     template <typename Value>
     class Table
     {
     public:
+        using Row = std::vector<Value>;
+
         void clear() {*this = Table{};}
 
         size_t nr_cols() const {return fieldnames_.size();}
@@ -54,55 +34,35 @@ namespace gubg { namespace data {
             MSS_END();
         }
 
-        class Row
+        Row &add_row()
         {
-        public:
-            Row(Table &outer): outer_(&outer) {}
-            Row(Row &&dying): outer_(dying.outer_)
-            {
-                outer_ = nullptr;
-            }
-            ~Row()
-            {
-                if (!outer_)
-                    return;
-                const auto rix = outer_->add_row();
-                const auto nr = std::min(values_.size(), outer_->nr_cols());
-                for (size_t cix = 0; cix < nr; ++cix)
-                    outer_->set_value(rix, cix, values_[cix]);
-            }
-            template <typename V>
-            bool set(size_t ix, const V &value)
-            {
-                values_.resize(std::max(ix+1, values_.size()));
-                Traits<Value>::convert(values_[ix], value);
-                return true;
-            }
-        private:
-            Row(const Row &);
-            Row &operator=(const Row &);
-
-            Table *outer_;
-            std::vector<Value> values_;
-        };
-        Row stage_row()
-        {
-            Row row(*this);
-            return row;
-        }
-
-        size_t add_row()
-        {
-            const auto rix = rows_.size();
             rows_.emplace_back(nr_cols());
-            return rix;
+            return rows_.back();
         }
 
-        void set_value(size_t rix, size_t cix, const Value &value)
+        const Row &row(size_t rix) const { return rows_[rix]; }
+        Row &row(size_t rix) { return rows_[rix]; }
+
+        template <typename DstValue>
+        bool select(Table<DstValue> &dst, const std::vector<size_t> &fixs)
         {
-            assert(rix < rows_.size());
-            assert(cix < rows_[rix].size());
-            rows_[rix][cix] = value;
+            MSS_BEGIN(bool);
+            dst.clear();
+            for (auto fix: fixs)
+            {
+                MSS(fix < fieldnames_.size());
+                MSS(dst.add_field(fieldnames_[fix]));
+            }
+            for (auto &src_row: rows_)
+            {
+                auto &dst_row = dst.add_row();
+                auto dst_it = dst_row.begin();
+                for (auto fix: fixs)
+                {
+                    MSS(Traits<DstValue>::convert(*dst_it++, src_row[fix]));
+                }
+            }
+            MSS_END();
         }
 
         void stream(std::ostream &os) const
@@ -124,7 +84,7 @@ namespace gubg { namespace data {
 
     private:
         std::vector<std::string> fieldnames_;
-        std::vector<std::vector<Value>> rows_;
+        std::vector<Row> rows_;
     };
 
     template <typename Value>
