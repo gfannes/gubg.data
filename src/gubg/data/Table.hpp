@@ -16,12 +16,15 @@ namespace gubg { namespace data {
     class Table
     {
     public:
+        using Fieldnames = std::vector<std::string>;
         using Row = std::vector<Value>;
 
         void clear() {*this = Table{};}
 
-        size_t nr_cols() const {return fieldnames_.size();}
         size_t nr_rows() const {return rows_.size();}
+        size_t nr_cols() const {return fieldnames_.size();}
+
+        const Fieldnames &fieldnames() const {return fieldnames_;}
 
         bool add_field(const std::string &name)
         {
@@ -83,7 +86,7 @@ namespace gubg { namespace data {
         }
 
     private:
-        std::vector<std::string> fieldnames_;
+        Fieldnames fieldnames_;
         std::vector<Row> rows_;
     };
 
