@@ -3,12 +3,36 @@
 
 #include "gubg/mss.hpp"
 #include "gubg/Range.hpp"
+#include "gubg/Strange.hpp"
 #include <vector>
 #include <string>
 #include <algorithm>
 #include <ostream>
+#include <cassert>
 
 namespace gubg { namespace data { 
+
+    template <typename Value> struct Traits
+    {
+        static void convert(Value &dst, const gubg::Strange &strange)
+        {
+            dst = strange;
+        }
+    }; 
+    template <> struct Traits<float>
+    {
+        static void convert(float &dst, gubg::Strange strange)
+        {
+            strange.pop_float(dst);
+        }
+    };
+    template <> struct Traits<std::string>
+    {
+        static void convert(std::string &dst, const gubg::Strange &strange)
+        {
+            dst = strange.str();
+        }
+    };
 
     template <typename Value>
     class Table
@@ -47,10 +71,11 @@ namespace gubg { namespace data {
                 for (size_t cix = 0; cix < nr; ++cix)
                     outer_->set_value(rix, cix, values_[cix]);
             }
-            bool set(size_t ix, const Value &value)
+            template <typename V>
+            bool set(size_t ix, const V &value)
             {
                 values_.resize(std::max(ix+1, values_.size()));
-                values_[ix] = value;
+                Traits<Value>::convert(values_[ix], value);
                 return true;
             }
         private:
@@ -75,6 +100,8 @@ namespace gubg { namespace data {
 
         void set_value(size_t rix, size_t cix, const Value &value)
         {
+            assert(rix < rows_.size());
+            assert(cix < rows_[rix].size());
             rows_[rix][cix] = value;
         }
 
