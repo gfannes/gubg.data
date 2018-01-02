@@ -53,7 +53,7 @@ namespace gubg { namespace data {
             dst.clear();
             for (auto fix: fixs)
             {
-                MSS(fix < fieldnames_.size());
+                MSS(fix < nr_cols());
                 MSS(dst.add_field(fieldnames_[fix]));
             }
             for (auto &src_row: rows_)
@@ -65,6 +65,51 @@ namespace gubg { namespace data {
                     MSS(Traits<DstValue>::convert(*dst_it++, src_row[fix]));
                 }
             }
+            MSS_END();
+        }
+        //When selecting into a vector of vectors, Table will do the resizing
+        template <typename DstValue>
+        bool select(std::vector<std::vector<DstValue>> &rows, const std::vector<size_t> &fixs)
+        {
+            MSS_BEGIN(bool);
+            for (auto fix: fixs)
+            {
+                MSS(fix < nr_cols());
+            }
+            rows.resize(nr_rows());
+            for (size_t rix = 0; rix < nr_rows(); ++rix)
+            {
+                const auto &src_row = rows_[rix];
+                auto &dst_row = rows[rix];
+                dst_row.resize(fixs.size());
+                for (size_t i = 0; i < fixs.size(); ++i)
+                {
+                    MSS(Traits<DstValue>::convert(dst_row[i], src_row[fixs[i]]));
+                }
+            }
+            MSS_END();
+        }
+        //When selecting into something else than a vector of vectors, Table will NOT do the resizing, but fail instead
+        template <typename DstValue, typename Rows>
+        bool select(Rows &rows, const std::vector<size_t> &fixs)
+        {
+            MSS_BEGIN(bool);
+            for (auto fix: fixs)
+            {
+                MSS(fix < nr_cols());
+            }
+            size_t rix = 0;
+            for (auto &dst_row: rows)
+            {
+                const auto &src_row = rows_[rix++];
+                MSS(dst_row.size() == fixs.size());
+                size_t i = 0;
+                for (auto &v: dst_row)
+                {
+                    MSS(Traits<DstValue>::convert(v, src_row[fixs[i++]]));
+                }
+            }
+            MSS(rix == nr_rows());
             MSS_END();
         }
 
