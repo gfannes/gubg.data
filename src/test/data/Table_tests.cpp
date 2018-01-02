@@ -39,12 +39,12 @@ TEST_CASE("data::Table tests", "[ut][data][Table]")
     SECTION("list<list<>> block")
     {
         std::list<std::list<float>> block;
-        REQUIRE(!table_strange.select<float>(block, fixs));
+        REQUIRE(!table_strange.select(block, fixs));
         block.resize(table_strange.nr_rows());
-        REQUIRE(!table_strange.select<float>(block, fixs));
+        REQUIRE(!table_strange.select(block, fixs));
         for (auto &row: block)
             row.resize(fixs.size());
-        REQUIRE(table_strange.select<float>(block, fixs));
+        REQUIRE(table_strange.select(block, fixs));
         for (const auto &row: block)
         {
             for (auto v: row)

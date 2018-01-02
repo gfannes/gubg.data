@@ -8,6 +8,7 @@
 #include <string>
 #include <algorithm>
 #include <ostream>
+#include <type_traits>
 #include <cassert>
 
 namespace gubg { namespace data { 
@@ -90,7 +91,7 @@ namespace gubg { namespace data {
             MSS_END();
         }
         //When selecting into something else than a vector of vectors, Table will NOT do the resizing, but fail instead
-        template <typename DstValue, typename Rows>
+        template <typename Rows>
         bool select(Rows &rows, const std::vector<size_t> &fixs)
         {
             MSS_BEGIN(bool);
@@ -106,6 +107,7 @@ namespace gubg { namespace data {
                 size_t i = 0;
                 for (auto &v: dst_row)
                 {
+                    using DstValue = typename std::remove_reference<decltype(v)>::type;
                     MSS(Traits<DstValue>::convert(v, src_row[fixs[i++]]));
                 }
             }
