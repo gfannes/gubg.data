@@ -22,12 +22,15 @@ namespace gubg { namespace data {
             return *this;
         }
 
-        bool operator()(Table &table, const std::string &filename)
+        template <typename Value>
+        bool operator()(Table<Value> &table, const std::string &filename)
         {
             MSS_BEGIN(bool, "");
+
             std::string content;
             MSS(file::read(content, filename));
             Strange strange(content);
+
             Strange line;
             bool names_are_set = false;
             if (has_fieldnames_)
@@ -41,7 +44,7 @@ namespace gubg { namespace data {
                 names_are_set = true;
             }
 
-            std::string value;
+            gubg::Strange value;
             while (strange.pop_line(line))
             {
                 if (!names_are_set)

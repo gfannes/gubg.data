@@ -10,22 +10,23 @@
 
 namespace gubg { namespace data { 
 
+    template <typename Value>
     class Table
     {
     public:
         void clear() {*this = Table{};}
 
         size_t nr_cols() const {return fieldnames_.size();}
-        size_t nr_rows() const {return nr_rows_;}
+        size_t nr_rows() const {return rows_.size();}
 
         bool add_field(const std::string &name)
         {
             MSS_BEGIN(bool);
             MSS(std::find(RANGE(fieldnames_), name) == fieldnames_.end());
             fieldnames_.push_back(name);
-            data_.resize(fieldnames_.size());
-            for (auto &col: data_)
-                col.resize(nr_rows_);
+            const auto nrc = fieldnames_.size();
+            for (auto &row: rows_)
+                row.resize(nrc);
             MSS_END();
         }
 
@@ -46,7 +47,7 @@ namespace gubg { namespace data {
                 for (size_t cix = 0; cix < nr; ++cix)
                     outer_->set_value(rix, cix, values_[cix]);
             }
-            bool set(size_t ix, const std::string &value)
+            bool set(size_t ix, const Value &value)
             {
                 values_.resize(std::max(ix+1, values_.size()));
                 values_[ix] = value;
@@ -57,7 +58,7 @@ namespace gubg { namespace data {
             Row &operator=(const Row &);
 
             Table *outer_;
-            std::vector<std::string> values_;
+            std::vector<Value> values_;
         };
         Row stage_row()
         {
@@ -67,15 +68,14 @@ namespace gubg { namespace data {
 
         size_t add_row()
         {
-            ++nr_rows_;
-            for (auto &col: data_)
-                col.resize(nr_rows_);
-            return nr_rows_-1;
+            const auto rix = rows_.size();
+            rows_.emplace_back(nr_cols());
+            return rix;
         }
 
-        void set_value(size_t rix, size_t cix, const std::string &value)
+        void set_value(size_t rix, size_t cix, const Value &value)
         {
-            data_[cix][rix] = value;
+            rows_[rix][cix] = value;
         }
 
         void stream(std::ostream &os) const
@@ -89,7 +89,7 @@ namespace gubg { namespace data {
             {
                 os << "  [row]";
                 for (size_t cix = 0; cix < nr_cols(); ++cix)
-                    os << "(" << cix << ":" << data_[cix][rix] << ")";
+                    os << "(" << cix << ":" << rows_[rix][cix] << ")";
                 os << std::endl;
             }
             os << "}" << std::endl;
@@ -97,11 +97,11 @@ namespace gubg { namespace data {
 
     private:
         std::vector<std::string> fieldnames_;
-        std::vector<std::vector<std::string>> data_;
-        size_t nr_rows_ = 0;
+        std::vector<std::vector<Value>> rows_;
     };
 
-    inline std::ostream &operator<<(std::ostream &os, const Table &table)
+    template <typename Value>
+    std::ostream &operator<<(std::ostream &os, const Table<Value> &table)
     {
         table.stream(os);
         return os;
