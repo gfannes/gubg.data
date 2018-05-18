@@ -28,7 +28,7 @@ namespace gubg { namespace data {
             MSS_BEGIN(bool, "");
 
             std::string content;
-            MSS(file::read(content, filename));
+            MSS(file::read(content, gubg::file::Name{filename}));
             Strange strange(std::move(content));
 
             Strange line;
