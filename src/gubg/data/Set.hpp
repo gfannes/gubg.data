@@ -4,6 +4,7 @@
 #include "gubg/data/Field.hpp"
 #include "gubg/data/Record.hpp"
 #include "gubg/naft/Range.hpp"
+#include "gubg/naft/Document.hpp"
 #include "gubg/mss.hpp"
 #include "gubg/Range.hpp"
 #include <numeric>
@@ -11,10 +12,10 @@
 namespace gubg { namespace data { 
 
     namespace details { 
-        void read(float &v, Strange &strange) { strange.pop_float(v); }
-        void read(double &v, Strange &strange) { strange.pop_float(v); }
-        void read(int &v, Strange &strange) { strange.pop_decimal(v); }
-        void read(std::string &v, Strange &strange) { v = strange.str(); }
+        inline void read(float &v, Strange &strange) { strange.pop_float(v); }
+        inline void read(double &v, Strange &strange) { strange.pop_float(v); }
+        inline void read(int &v, Strange &strange) { strange.pop_decimal(v); }
+        inline void read(std::string &v, Strange &strange) { v = strange.str(); }
     } 
 
     template <typename T>
@@ -30,8 +31,57 @@ namespace gubg { namespace data {
         Fields fields;
         Records records;
 
+        void write(naft::Document &doc) const
+        {
+            auto n = doc.node(":data.Set");
+            n.attr("name", name);
+            {
+                auto fs = n.node("fields");
+                auto rix = 0u;
+                for (const auto &field: fields)
+                {
+                    auto f = fs.node(std::to_string(rix));
+                    f.attr("name", field.name);
+                    f.attr("dim", field.dim);
+                    ++rix;
+                }
+            }
+            {
+                auto rs = n.node("records");
+                auto rix = 0u;
+                for (const auto &record: records)
+                {
+                    auto r = rs.node(std::to_string(rix));
+                    auto fix = 0u;
+                    for (auto field: record.fields)
+                    {
+                        auto f = r.node(std::to_string(fix));
+                        if (!field.empty())
+                        {
+                            f.text(field.front());
+                            field.pop_front();
+                            while (!field.empty())
+                            {
+                                f.text(' ');
+                                f.text(field.front());
+                                field.pop_front();
+                            }
+                        }
+                        ++fix;
+                    }
+                    ++rix;
+                }
+            }
+        }
+
     private:
     };
+
+    template <typename T>
+    void write(naft::Document &doc, const Set<T> &set)
+    {
+        set.write(doc);
+    }
 
     template <typename T>
     bool read(Set<T> &dst, naft::Range &range)
