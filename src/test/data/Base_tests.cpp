@@ -1,5 +1,6 @@
 #include "catch.hpp"
 #include "gubg/data/Base.hpp"
+#include "gubg/naft/Document.hpp"
 #include <fstream>
 
 TEST_CASE("data::Base<float>", "[ut][data][Base]")

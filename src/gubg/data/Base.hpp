@@ -37,10 +37,13 @@ namespace gubg { namespace data {
             MSS_END();
         }
 
-        void write(naft::Document &doc) const
+        void write(naft::Node &n) const
         {
             for (const auto &p: sets_)
-                data::write(doc, p.second);
+            {
+                auto set = n.node(":data.Set");
+                data::write(set, p.second);
+            }
         }
 
     private:
@@ -48,9 +51,9 @@ namespace gubg { namespace data {
     };
 
     template <typename T>
-    void write(naft::Document &doc, const Base<T> &base)
+    void write(naft::Node &n, const Base<T> &base)
     {
-        base.write(doc);
+        base.write(n);
     }
 
 } } 

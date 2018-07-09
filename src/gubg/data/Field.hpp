@@ -2,6 +2,7 @@
 #define HEADER_gubg_data_Field_hpp_ALREADY_INCLUDED
 
 #include "gubg/naft/Range.hpp"
+#include "gubg/naft/Node.hpp"
 #include "gubg/mss.hpp"
 #include <vector>
 
@@ -37,6 +38,18 @@ namespace gubg { namespace data {
     }
 
     using Fields = std::vector<Field>;
+
+    inline void write(naft::Node &n, const Fields &fields)
+    {
+        auto rix = 0u;
+        for (const auto &field: fields)
+        {
+            auto f = n.node(std::to_string(rix));
+            f.attr("name", field.name);
+            f.attr("dim", field.dim);
+            ++rix;
+        }
+    }
 
     inline bool read(Fields &dst, naft::Range &range)
     {
