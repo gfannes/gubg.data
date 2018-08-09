@@ -22,7 +22,7 @@ namespace gubg { namespace data {
     {
         MSS_BEGIN(bool);
 
-        auto attr = range.pop_attr();
+        auto attr = range.pop_attrs();
         {
             auto it = attr.find("name");
             MSS(it != attr.end());

@@ -51,10 +51,10 @@ namespace gubg { namespace data {
     {
         MSS_BEGIN(bool);
 
-        naft::Attr attr;
-        range.pop_attr(attr);
-        auto it = attr.find("name");
-        if (it != attr.end())
+        naft::Attrs attrs;
+        range.pop_attrs(attrs);
+        auto it = attrs.find("name");
+        if (it != attrs.end())
             dst.name = it->second;
 
         naft::Range block;
