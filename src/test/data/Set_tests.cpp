@@ -1,6 +1,6 @@
 #include "catch.hpp"
 #include "gubg/data/Set.hpp"
-#include "gubg/naft/Range.hpp"
+#include "gubg/s11n/Reader.hpp"
 
 TEST_CASE("data::Set<float> tests", "[ut][data][Set]")
 {
@@ -101,9 +101,8 @@ TEST_CASE("data::Set<float> tests", "[ut][data][Set]")
 
     if (!scn.str.empty())
     {
-        gubg::naft::Range range(scn.str);
-        REQUIRE(range.pop_type("data.Set"));
-        const auto ok = read(set, range);
+        gubg::s11n::Reader r(scn.str);
+        const auto ok = r.object(":data.Set", set);
         REQUIRE(ok == exp.ok);
     }
 

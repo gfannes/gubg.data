@@ -16,15 +16,24 @@ namespace gubg { namespace data {
     public:
         using Set = data::Set<T>;
 
+        template <typename Writer>
+        bool write(Writer &w) const
+        {
+            MSS_BEGIN(bool);
+            for (const auto &p: sets_) { MSS(w.object(":data.Set", p.second)); }
+            MSS_END();
+        }
+
         bool load(const std::string &content)
         {
             MSS_BEGIN(bool);
-            naft::Range range(content);
-            while (range.pop_type("data.Set"))
+            s11n::Reader r(content);
+            for (bool more = true; more; )
             {
                 Set set;
-                MSS(read(set, range));
-                sets_.emplace(set.name, std::move(set));
+                more = r.object(":data.Set", set);
+                if (more)
+                    sets_.emplace(set.name, std::move(set));
             }
             MSS_END();
         }
@@ -37,24 +46,9 @@ namespace gubg { namespace data {
             MSS_END();
         }
 
-        void write(naft::Node &n) const
-        {
-            for (const auto &p: sets_)
-            {
-                auto set = n.node(":data.Set");
-                data::write(set, p.second);
-            }
-        }
-
     private:
         std::map<std::string, Set> sets_;
     };
-
-    template <typename T>
-    void write(naft::Node &n, const Base<T> &base)
-    {
-        base.write(n);
-    }
 
 } } 
 
