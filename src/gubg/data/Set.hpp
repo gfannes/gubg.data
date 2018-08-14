@@ -3,6 +3,7 @@
 
 #include "gubg/data/Field.hpp"
 #include "gubg/data/Record.hpp"
+#include "gubg/std/optional.hpp"
 #include "gubg/mss.hpp"
 #include <numeric>
 
@@ -15,11 +16,25 @@ namespace gubg { namespace data {
         using Self = Set<T>;
 
     public:
+        using Record = data::Record<T>;
         using Records = data::Records<T>;
 
         std::string name;
         Fields fields;
         Records records;
+
+        Record &add_record()
+        {
+            if (!total_dim_)
+            {
+                unsigned int nr = 0;
+                for (const auto &field: fields)
+                    nr += field.dim;
+                total_dim_ = nr;
+            }
+            records.emplace_back(fields.size(), *total_dim_);
+            return records.back();
+        }
 
         template <typename Writer>
         bool write(Writer &w) const
@@ -47,14 +62,15 @@ namespace gubg { namespace data {
             MSS_END();
         }
 
-        bool read(s11n::Reader &r)
+        template <typename Reader>
+        bool read(Reader &r)
         {
             MSS_BEGIN(bool);
 
             name.clear();
             r.attr("name", name);
 
-            auto read_fields = [&](s11n::Reader &r){
+            auto read_fields = [&](Reader &r){
                 MSS_BEGIN(bool);
                 fields.clear();
                 for (auto fix = 0u; ; ++fix)
@@ -69,14 +85,16 @@ namespace gubg { namespace data {
             };
             MSS(r("fields", read_fields));
 
-            auto read_records = [&](s11n::Reader &r){
+            auto read_records = [&](Reader &r){
                 MSS_BEGIN(bool);
                 const auto total_dim = std::accumulate(RANGE(fields), 0u, [](unsigned int total, const Field &field){return total+field.dim;});
+                L(C(total_dim));
                 records.clear();
-                for (auto fix = 0u; ; ++fix)
+                for (auto rix = 0u; ; ++rix)
                 {
-                    Record<T> rec(fields.size(), total_dim);
-                    if (!r.object(fix, rec, fields))
+                    L(C(rix));
+                    Record rec(fields.size(), total_dim);
+                    if (!r.object(rix, rec, fields))
                         break;
                     records.push_back(std::move(rec));
                 }
@@ -89,6 +107,7 @@ namespace gubg { namespace data {
         }
 
     private:
+        std::optional<unsigned int> total_dim_;
     };
 
 } } 

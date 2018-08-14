@@ -26,24 +26,67 @@ namespace gubg { namespace data {
 
         Ranges fields;
 
-        Record(size_t nr_fields, size_t total_dim): data_(total_dim), fields(nr_fields), next_field_(fields.begin()) {}
+        Record(size_t nr_fields, size_t total_dim): data_(total_dim), fields(nr_fields) {}
+        Record(Record &&dying): fields(std::move(dying.fields)), data_(std::move(dying.data_)), next_ix_(dying.next_ix_), next_field_ix_(dying.next_field_ix_) { }
+        Record(const Record &rhs): fields(rhs.fields.size()), data_(rhs.data_)
+        {
+            auto ptr = data_.data();
+            for (; next_field_ix_ != rhs.next_field_ix_; ++next_field_ix_)
+            {
+                const auto dim = rhs.fields[next_field_ix_].size();
+                fields[next_field_ix_] = Range(ptr, ptr+dim);
+                ptr += dim;
+                next_ix_ += dim;
+            }
+        }
+        Record &operator=(const Record &rhs)
+        {
+            fields.resize(rhs.fields.size());
+            data_ = rhs.data_;
+            next_field_ix_ = 0;
+            next_ix_ = 0;
+
+            auto ptr = data_.data();
+            for (; next_field_ix_ != rhs.next_field_ix_; ++next_field_ix_)
+            {
+                const auto dim = rhs.fields[next_field_ix_].size();
+                fields[next_field_ix_] = Range(ptr, ptr+dim);
+                ptr += dim;
+                next_ix_ += dim;
+            }
+            return *this;
+        }
+
+        T &data(size_t fix, size_t ix = 0) {return fields[fix][ix];}
+        const T &data(size_t fix, size_t ix = 0) const {return fields[fix][ix];}
+
+        bool add_data(T v)
+        {
+            MSS_BEGIN(bool);
+            Range range;
+            MSS(add(range, 1));
+            range.front() = v;
+            MSS_END();
+        }
 
         bool add(Range &range, size_t dim)
         {
             MSS_BEGIN(bool);
             MSS(dim <= (data_.size()-next_ix_));
-            MSS(next_field_ != fields.end());
-            range = *next_field_ = Range(&data_[next_ix_], &data_[next_ix_+dim]);
+            MSS(next_field_ix_ != fields.size());
+            range = fields[next_field_ix_] = Range(&data_[next_ix_], &data_[next_ix_+dim]);
             next_ix_ += dim;
-            ++next_field_;
+            ++next_field_ix_;
             MSS_END();
         }
 
-        bool read(s11n::Reader &r, const Fields &fields_info)
+        template <typename Reader>
+        bool read(Reader &r, const Fields &fields_info)
         {
             MSS_BEGIN(bool);
             for (auto fix = 0u; fix < fields.size(); ++fix)
             {
+                L(C(fix));
                 auto read_field = [&](auto &r1){
                     MSS_BEGIN(bool);
 
@@ -53,6 +96,7 @@ namespace gubg { namespace data {
 
                     Strange values;
                     r1.text(values);
+                    L(C(values));
                     bool all_values_could_be_added = true;
                     auto add_value_to_range = [&](auto &part)
                     {
@@ -62,6 +106,7 @@ namespace gubg { namespace data {
                             return;
                         }
                         details::read(rng.front(), part);
+                        L(C(rng.front())C(part));
                         rng.pop_front();
                     };
                     values.each_split(' ', add_value_to_range);
@@ -110,7 +155,7 @@ namespace gubg { namespace data {
         Data data_;
         size_t next_ix_ = 0;
 
-        typename Ranges::iterator next_field_;
+        size_t next_field_ix_ = 0;
     };
 
     //Records
