@@ -68,6 +68,15 @@ namespace gubg { namespace data {
             range.front() = v;
             MSS_END();
         }
+        bool add_data(T a, T b)
+        {
+            MSS_BEGIN(bool);
+            Range range;
+            MSS(add(range, 2));
+            range[0] = a;
+            range[1] = b;
+            MSS_END();
+        }
 
         bool add(Range &range, size_t dim)
         {
