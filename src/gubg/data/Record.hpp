@@ -57,6 +57,14 @@ namespace gubg { namespace data {
             return *this;
         }
 
+        bool has_dim(size_t fix, unsigned int wanted_dim) const
+        {
+            MSS_BEGIN(bool);
+            MSS(fix < fields.size());
+            MSS_Q(fields[fix].size() == wanted_dim);
+            MSS_END();
+        }
+
         T &data(size_t fix, size_t ix = 0) {return fields[fix][ix];}
         const T &data(size_t fix, size_t ix = 0) const {return fields[fix][ix];}
 
