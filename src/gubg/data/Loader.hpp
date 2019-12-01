@@ -4,7 +4,7 @@
 #include "gubg/data/Table.hpp"
 #include "gubg/mss.hpp"
 #include "gubg/Strange.hpp"
-#include "gubg/file/System.hpp"
+#include "gubg/file/system.hpp"
 
 namespace gubg { namespace data { 
 
