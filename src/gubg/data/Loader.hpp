@@ -1,10 +1,11 @@
 #ifndef HEADER_gubg_data_Loader_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_data_Loader_hpp_ALREADY_INCLUDED
 
-#include "gubg/data/Table.hpp"
-#include "gubg/mss.hpp"
-#include "gubg/Strange.hpp"
-#include "gubg/file/system.hpp"
+#include <gubg/data/Table.hpp>
+#include <gubg/mss.hpp>
+#include <gubg/Strange.hpp>
+#include <gubg/file/system.hpp>
+#include <sstream>
 
 namespace gubg { namespace data { 
 
