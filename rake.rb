@@ -1,0 +1,2 @@
+namespace :data do
+end
