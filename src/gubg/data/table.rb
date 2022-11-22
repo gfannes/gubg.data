@@ -1,4 +1,4 @@
-module GUBG
+module Gubg
     module Data
         class Row
             def initialize()
