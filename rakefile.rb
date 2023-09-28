@@ -1,2 +1,0 @@
-task :prepare
-task :run
